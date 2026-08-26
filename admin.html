@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>B&B Admin Dashboard</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #050505;
+      --bg-card: #111;
+      --text-white: #ffffff;
+      --text-secondary: #999999;
+      --red-primary: #e50914;
+      --border-light: rgba(255, 255, 255, 0.1);
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: var(--font-body);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    aside {
+      width: 260px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border-light);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand {
+      font-family: var(--font-display);
+      font-size: 32px;
+      letter-spacing: 2px;
+      margin-bottom: 40px;
+      color: var(--text-white);
+      text-decoration: none;
+    }
+    .brand span { color: var(--red-primary); }
+
+    .nav-list { list-style: none; display: flex; flex-direction: column; gap: 15px; }
+    .nav-item {
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: 0.3s;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: rgba(229, 9, 20, 0.1);
+      color: var(--red-primary);
+    }
+
+    /* Main Content */
+    main {
+      flex: 1;
+      padding: 40px;
+      overflow-y: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: 36px;
+      letter-spacing: 1px;
+    }
+
+    /* Data Table */
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    th {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      background: rgba(255,255,255,0.02);
+    }
+
+    td {
+      font-size: 14px;
+    }
+
+    .btn {
+      background: var(--red-primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-family: var(--font-body);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: #b90710;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      color: white;
+    }
+    
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+  </style>
+</head>
+<body>
+
+  <aside>
+    <a href="#" class="brand">B<span>&amp;</span>B ADMIN</a>
+    <ul class="nav-list">
+      <li class="nav-item active" data-target="dashboard">Dashboard</li>
+      <li class="nav-item" data-target="products">Products</li>
+      <li class="nav-item" data-target="orders">Orders</li>
+    </ul>
+  </aside>
+
+  <main>
+    <div id="dashboard-view" class="view-section active">
+      <header>
+        <h1>DASHBOARD</h1>
+      </header>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+        <div class="table-card" style="padding: 24px;">
+          <h3 style="color: var(--text-secondary); font-size: 14px;">Total Sales</h3>
+          <p style="font-size: 32px; font-weight: 600; margin-top: 10px;" id="stat-sales">₹0</p>
+        </div>
+        <div class="table-card" style="padding: 24px;">
+          <h3 style="color: var(--text-secondary); font-size: 14px;">Orders</h3>
+          <p style="font-size: 32px; font-weight: 600; margin-top: 10px;" id="stat-orders">0</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="products-view" class="view-section">
+      <header>
+        <h1>PRODUCTS</h1>
+        <button class="btn" id="add-product-btn">+ Add Product</button>
+      </header>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="products-tbody">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="orders-view" class="view-section">
+      <header>
+        <h1>ORDERS</h1>
+      </header>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Total</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="orders-tbody">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="./src/admin.js"></script>
+</body>
+</html>
