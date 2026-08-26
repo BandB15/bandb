@@ -325,3 +325,10 @@
     margin: 48px 0 40px;
   }
 }
+
+/* Discount Glow Effect */
+.discount-glow {
+  text-shadow: 0 0 10px rgba(229, 9, 20, 0.8);
+  color: var(--red-primary) !important;
+  font-weight: 700;
+}

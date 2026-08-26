@@ -10,6 +10,9 @@ import {
   ZoomIn,
   Star,
   ShieldCheck,
+  ShieldAlert,
+  UserCheck,
+  LogOut,
   RotateCcw,
   Lock,
   Truck,
@@ -77,6 +80,9 @@ function initIcons() {
       ZoomIn,
       Star,
       ShieldCheck,
+      ShieldAlert,
+      UserCheck,
+      LogOut,
       RotateCcw,
       Lock,
       Truck,
@@ -157,9 +163,10 @@ function createProductCardHTML(product, isSearchResult = false) {
       <div class="product-info">
         <span class="product-brand">${product.brand}</span>
         <h3 class="product-name">${product.name}</h3>
-        <div class="product-price-row">
-          <span class="product-price">${product.price}</span>
-          <span class="product-tag">${product.fit}</span>
+        <div class="product-price-row" style="display: flex; align-items: center; width: 100%;">
+          ${product.originalPrice ? `<span class="product-original-price" style="text-decoration: line-through; color: var(--text-secondary); margin-right: 8px; font-size: 13px;">${product.originalPrice}</span>` : ''}
+          <span class="product-price ${product.originalPrice ? 'discount-glow' : ''}">${product.price}</span>
+          ${product.originalPrice ? `<span class="product-discount-tag" style="color: var(--red-primary); margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: 1px;">SALE</span>` : `<span class="product-tag" style="margin-left: auto;">${product.fit}</span>`}
         </div>
       </div>
     </article>
@@ -425,11 +432,25 @@ async function renderProductDetailPage(slug) {
   if (titleEl) titleEl.textContent = product.name;
   if (ratingScoreEl) ratingScoreEl.textContent = product.rating || 4.8;
   if (reviewsLinkEl) reviewsLinkEl.textContent = `${product.reviewCount || 128} reviews`;
-  if (priceCurrentEl) priceCurrentEl.textContent = product.priceFormatted || product.price;
+  if (priceCurrentEl) {
+    priceCurrentEl.textContent = product.priceFormatted || product.price;
+    if (product.originalPriceFormatted || product.originalPrice) {
+      priceCurrentEl.classList.add('discount-glow');
+    } else {
+      priceCurrentEl.classList.remove('discount-glow');
+    }
+  }
+  
   if (priceOriginalEl) priceOriginalEl.textContent = product.originalPriceFormatted || product.originalPrice || '';
+  
   if (discountBadgeEl) {
     if (product.originalPriceFormatted || product.originalPrice) {
-      discountBadgeEl.textContent = product.discount || 'SALE';
+      let discountText = product.discount || 'SALE';
+      if (product.priceRaw && product.original_price) {
+        const percent = Math.round(((product.original_price - product.priceRaw) / product.original_price) * 100);
+        if (percent > 0) discountText = `${percent}% OFF`;
+      }
+      discountBadgeEl.textContent = discountText;
       discountBadgeEl.style.display = 'inline-block';
     } else {
       discountBadgeEl.style.display = 'none';
@@ -499,42 +520,56 @@ function renderPdpTabs(product) {
   // Tab 1: Details Bullets
   const detailsListEl = document.getElementById('pdp-tab-details-list');
   if (detailsListEl) {
-    const bullets = product.detailsBullets || [
-      "Oversized relaxed streetwear silhouette",
-      "Heavyweight 460 GSM organic French terry cotton",
-      "Double-layered structured hood with discreet eyelets",
-      "Reinforced ribbed cuffs and waistband for shape retention",
-      "Ultra-soft brushed fleece interior lining"
-    ];
-    detailsListEl.innerHTML = bullets.map(b => `
-      <li class="pdp-bullet-item">
-        <i data-lucide="check" class="pdp-bullet-icon" style="width: 16px; height: 16px;"></i>
-        <span>${b}</span>
-      </li>
-    `).join('');
+    if (product.short_description) {
+      const bullets = product.short_description.split('\n').filter(b => b.trim() !== '');
+      detailsListEl.innerHTML = bullets.map(b => `
+        <li class="pdp-bullet-item">
+          <i data-lucide="check" class="pdp-bullet-icon" style="width: 16px; height: 16px;"></i>
+          <span>${b}</span>
+        </li>
+      `).join('');
+    } else {
+      const bullets = product.detailsBullets || [
+        "Oversized relaxed streetwear silhouette",
+        "Heavyweight 460 GSM organic French terry cotton",
+        "Double-layered structured hood with discreet eyelets",
+        "Reinforced ribbed cuffs and waistband for shape retention",
+        "Ultra-soft brushed fleece interior lining"
+      ];
+      detailsListEl.innerHTML = bullets.map(b => `
+        <li class="pdp-bullet-item">
+          <i data-lucide="check" class="pdp-bullet-icon" style="width: 16px; height: 16px;"></i>
+          <span>${b}</span>
+        </li>
+      `).join('');
+    }
   }
 
   // Tab 2: Materials
   const materialsTableEl = document.getElementById('pdp-tab-materials-table');
-  if (materialsTableEl && product.materials) {
-    materialsTableEl.innerHTML = `
-      <div class="pdp-material-row">
-        <span class="pdp-material-title">Fabric Composition</span>
-        <span class="pdp-material-val">${product.materials.fabric}</span>
-      </div>
-      <div class="pdp-material-row">
-        <span class="pdp-material-title">Garment Weight</span>
-        <span class="pdp-material-val">${product.materials.weight}</span>
-      </div>
-      <div class="pdp-material-row">
-        <span class="pdp-material-title">Finish &amp; Feel</span>
-        <span class="pdp-material-val">${product.materials.finish}</span>
-      </div>
-      <div class="pdp-material-row">
-        <span class="pdp-material-title">Care Instructions</span>
-        <span class="pdp-material-val">${product.materials.care}</span>
-      </div>
-    `;
+  if (materialsTableEl) {
+    if (typeof product.material === 'string') {
+       materialsTableEl.innerHTML = `<p style="color: var(--text-secondary); line-height: 1.6;">${product.material.replace(/\\n/g, '<br>')}</p>`;
+    } else if (product.materials) {
+      materialsTableEl.innerHTML = `
+        <div class="pdp-material-row">
+          <span class="pdp-material-title">Fabric Composition</span>
+          <span class="pdp-material-val">${product.materials.fabric}</span>
+        </div>
+        <div class="pdp-material-row">
+          <span class="pdp-material-title">Garment Weight</span>
+          <span class="pdp-material-val">${product.materials.weight}</span>
+        </div>
+        <div class="pdp-material-row">
+          <span class="pdp-material-title">Finish &amp; Feel</span>
+          <span class="pdp-material-val">${product.materials.finish}</span>
+        </div>
+        <div class="pdp-material-row">
+          <span class="pdp-material-title">Care Instructions</span>
+          <span class="pdp-material-val">${product.materials.care}</span>
+        </div>
+      `;
+    }
   }
 
   // Tab 3: Size & Fit
@@ -542,7 +577,11 @@ function renderPdpTabs(product) {
   const fitTypeEl = document.getElementById('pdp-fit-type-desc');
   const sizeTableEl = document.getElementById('pdp-tab-size-table');
 
-  if (product.sizeFit) {
+  if (typeof product.fit === 'string') {
+    if (modelStatsEl) modelStatsEl.innerHTML = '';
+    if (fitTypeEl) fitTypeEl.innerHTML = `<p style="color: var(--text-secondary); line-height: 1.6;">${product.fit.replace(/\\n/g, '<br>')}</p>`;
+    if (sizeTableEl) sizeTableEl.innerHTML = '';
+  } else if (product.sizeFit) {
     if (modelStatsEl) {
       modelStatsEl.innerHTML = `
         <i data-lucide="user" style="width: 16px; height: 16px; color: var(--red-primary);"></i>
@@ -572,21 +611,25 @@ function renderPdpTabs(product) {
 
   // Tab 4: Shipping
   const shippingListEl = document.getElementById('pdp-tab-shipping-list');
-  if (shippingListEl && product.shippingInfo) {
-    shippingListEl.innerHTML = `
-      <li class="pdp-bullet-item">
-        <i data-lucide="truck" class="pdp-bullet-icon" style="width: 16px; height: 16px;"></i>
-        <span>${product.shippingInfo.freeShipping}</span>
-      </li>
-      <li class="pdp-bullet-item">
-        <i data-lucide="shield-check" class="pdp-bullet-icon" style="width: 16px; height: 16px;"></i>
-        <span>${product.shippingInfo.deliveryTime}</span>
-      </li>
-      <li class="pdp-bullet-item">
-        <i data-lucide="rotate-ccw" class="pdp-bullet-icon" style="width: 16px; height: 16px;"></i>
-        <span>${product.shippingInfo.returns}</span>
-      </li>
-    `;
+  if (shippingListEl) {
+    if (product.shipping_returns) {
+      shippingListEl.innerHTML = `<p style="color: var(--text-secondary); line-height: 1.6;">${product.shipping_returns.replace(/\\n/g, '<br>')}</p>`;
+    } else if (product.shippingInfo) {
+      shippingListEl.innerHTML = `
+        <li class="pdp-bullet-item">
+          <i data-lucide="truck" class="pdp-bullet-icon" style="width: 16px; height: 16px;"></i>
+          <span>${product.shippingInfo.freeShipping}</span>
+        </li>
+        <li class="pdp-bullet-item">
+          <i data-lucide="shield-check" class="pdp-bullet-icon" style="width: 16px; height: 16px;"></i>
+          <span>${product.shippingInfo.deliveryTime}</span>
+        </li>
+        <li class="pdp-bullet-item">
+          <i data-lucide="rotate-ccw" class="pdp-bullet-icon" style="width: 16px; height: 16px;"></i>
+          <span>${product.shippingInfo.returns}</span>
+        </li>
+      `;
+    }
   }
 }
 
@@ -1045,16 +1088,33 @@ function setupAuth() {
   // Listen to global auth state changes
   window.addEventListener('authStateChange', (e) => {
     const session = e.detail.session;
+    const navAdminBtn = document.getElementById('nav-admin-btn');
+    const navLogoutBtn = document.getElementById('nav-logout-btn');
     if (session) {
       // User signed in
       navAccountBtn.innerHTML = '<i data-lucide="user-check" style="width: 20px; height: 20px;"></i>';
+      if (navLogoutBtn) navLogoutBtn.style.display = 'flex';
+      
+      // Check if user is the specific admin
+      if (session.user.email === 'sujaldesai6989@gmail.com' && navAdminBtn) {
+        navAdminBtn.style.display = 'flex';
+      }
     } else {
       // User signed out
       navAccountBtn.innerHTML = '<i data-lucide="user" style="width: 20px; height: 20px;"></i>';
+      if (navAdminBtn) navAdminBtn.style.display = 'none';
+      if (navLogoutBtn) navLogoutBtn.style.display = 'none';
     }
     initIcons();
   });
+  
+  const navLogoutBtn = document.getElementById('nav-logout-btn');
+  navLogoutBtn?.addEventListener('click', async () => {
+    await signOut();
+    showToast('Signed out successfully!', 'check');
+  });
 }
+
 
 // Scroll Reveal IntersectionObserver
 function setupScrollReveal() {

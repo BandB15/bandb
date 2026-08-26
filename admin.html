@@ -150,6 +150,11 @@
       border-radius: 6px;
       color: white;
     }
+
+    select option {
+      background-color: #111;
+      color: var(--red-primary);
+    }
     
     .view-section { display: none; }
     .view-section.active { display: block; }
@@ -162,6 +167,7 @@
     <ul class="nav-list">
       <li class="nav-item active" data-target="dashboard">Dashboard</li>
       <li class="nav-item" data-target="products">Products</li>
+      <li class="nav-item" data-target="add-product">Add Product</li>
       <li class="nav-item" data-target="orders">Orders</li>
     </ul>
   </aside>
@@ -203,6 +209,96 @@
             <!-- Populated via JS -->
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <div id="add-product-view" class="view-section">
+      <header>
+        <h1>ADD PRODUCT</h1>
+      </header>
+      <div class="table-card" style="padding: 30px;">
+        <form id="admin-add-product-form">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+              <label>Product Title</label>
+              <input type="text" class="form-control" id="prod-title" required />
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <select class="form-control" id="prod-category" required>
+                <option value="">Select Category...</option>
+                <option value="shirts">Shirts</option>
+                <option value="tshirts">T-Shirts</option>
+                <option value="polos">Polos</option>
+                <option value="jeans">Jeans</option>
+                <option value="sportswear">Sportswear</option>
+                <option value="hoodies">Hoodies & Sweatshirts</option>
+              </select>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+              <label>Original Price (₹)</label>
+              <input type="number" class="form-control" id="prod-original-price" required />
+            </div>
+            <div class="form-group">
+              <label>Discounted Price (₹)</label>
+              <input type="number" class="form-control" id="prod-price" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Sizes (Check all that apply)</label>
+            <div style="display: flex; gap: 15px; margin-top: 10px;">
+              <label><input type="checkbox" name="sizes" value="S"> S</label>
+              <label><input type="checkbox" name="sizes" value="M"> M</label>
+              <label><input type="checkbox" name="sizes" value="L"> L</label>
+              <label><input type="checkbox" name="sizes" value="XL"> XL</label>
+              <label><input type="checkbox" name="sizes" value="XXL"> XXL</label>
+              <label><input type="checkbox" name="sizes" value="XXXL"> XXXL</label>
+              <label><input type="checkbox" name="sizes" value="28"> 28</label>
+              <label><input type="checkbox" name="sizes" value="30"> 30</label>
+              <label><input type="checkbox" name="sizes" value="32"> 32</label>
+              <label><input type="checkbox" name="sizes" value="34"> 34</label>
+              <label><input type="checkbox" name="sizes" value="38"> 38</label>
+              <label><input type="checkbox" name="sizes" value="40"> 40</label>
+              <label><input type="checkbox" name="sizes" value="42"> 42</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Product Image (Upload)</label>
+            <input type="file" class="form-control" id="prod-image" accept="image/*" required />
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea class="form-control" id="prod-desc" rows="3" required></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>Details</label>
+            <textarea class="form-control" id="prod-details" rows="2"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>Materials</label>
+            <textarea class="form-control" id="prod-materials" rows="2"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>Size & Fit</label>
+            <textarea class="form-control" id="prod-fit" rows="2"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Shipping & Returns</label>
+            <textarea class="form-control" id="prod-shipping" rows="2"></textarea>
+          </div>
+
+          <button type="submit" class="btn" style="width: 100%; margin-top: 20px;">Save Product</button>
+        </form>
       </div>
     </div>
 
